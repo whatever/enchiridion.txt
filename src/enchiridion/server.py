@@ -16,7 +16,7 @@ def index() -> RedirectResponse:
 @app.get("/enchiridion.txt")
 def enchiridion_text() -> Response:
 
-    chapters = glob.glob(str(pathlib.Path(__file__).parent / "chapters" / "*.md"))
+    chapters = glob.glob(str(pathlib.Path(__file__).parent / "chapters" / "*.txt"))
 
     chapter = random.choice(chapters)
 

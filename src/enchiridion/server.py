@@ -1,6 +1,7 @@
 import glob
 import pathlib
 import random
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, Response
 from fastapi.responses import RedirectResponse
@@ -16,9 +17,15 @@ def index() -> RedirectResponse:
 @app.get("/enchiridion.txt")
 def enchiridion_text() -> Response:
 
-    chapters = glob.glob(str(pathlib.Path(__file__).parent / "chapters" / "*.txt"))
+    now = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
-    chapter = random.choice(chapters)
+    chapters = sorted(
+        glob.glob(str(pathlib.Path(__file__).parent / "chapters" / "*.txt"))
+    )
+
+    print(now, hash(now) % len(chapters))
+
+    chapter = chapters[hash(now) % len(chapters)]
 
     with open(chapter, "r") as f:
         return Response(

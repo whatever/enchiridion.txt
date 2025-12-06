@@ -1,6 +1,7 @@
 import glob
 import pathlib
 import random
+import textwrap
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, Response
@@ -14,7 +15,7 @@ def index() -> RedirectResponse:
     return RedirectResponse(url="/enchiridion.txt")
 
 
-@app.get("/list")
+@app.get("/chapters")
 def list() -> Response:
     chapters = [c.name for c in pathlib.Path(__file__).parent.glob("chapters/*.txt")]
     return Response(
@@ -33,7 +34,12 @@ def chapter(chapter: str) -> Response:
         )
 
     with open(fpath, "r") as f:
-        return Response(content=f.read(), media_type="text/plain")
+        text = f.read().replace("\n", " ").replace("  ", "\n")
+
+    return Response(
+        content=textwrap.fill(text, width=32),
+        media_type="text/plain",
+    )
 
 
 @app.get("/enchiridion.txt")

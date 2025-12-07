@@ -18,10 +18,35 @@ def index() -> RedirectResponse:
 
 @app.get("/chapters")
 def list() -> Response:
-    chapters = [c.name for c in pathlib.Path(__file__).parent.glob("chapters/*.txt")]
+    chapters = sorted(
+        (c.name for c in pathlib.Path(__file__).parent.glob("chapters/*.txt")),
+        key=lambda c: convert_to_int(pathlib.Path(c).with_suffix("").name),
+    )
     return Response(
         content="\n".join(f"- {c}" for c in chapters), media_type="text/plain"
     )
+
+
+def convert_to_int(s: str) -> int:
+    """Return the integer value of a Roman numeral."""
+
+    s = s.upper()
+
+    values = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100}
+
+    total = 0
+    i = 0
+
+    while i < len(s):
+        # Look ahead for subtractive pair
+        if i + 1 < len(s) and values[s[i]] < values[s[i + 1]]:
+            total += values[s[i + 1]] - values[s[i]]
+            i += 2
+        else:
+            total += values[s[i]]
+            i += 1
+
+    return total
 
 
 def read_chapter(chapter: str) -> str:

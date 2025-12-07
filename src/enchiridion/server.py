@@ -1,4 +1,5 @@
 import glob
+import hashlib
 import pathlib
 import random
 import textwrap
@@ -23,8 +24,8 @@ def list() -> Response:
     )
 
 
-@app.get("/chapters/{chapter}")
-def chapter(chapter: str) -> Response:
+def read_chapter(chapter: str) -> str:
+    """Return the  text of a chapter, wrapped to 32 characters."""
 
     fpath = pathlib.Path(__file__).parent / "chapters" / f"{chapter}.txt"
 
@@ -34,10 +35,14 @@ def chapter(chapter: str) -> Response:
         )
 
     with open(fpath, "r") as f:
-        text = f.read().replace("\n", " ").replace("  ", "\n")
+        return textwrap.fill(f.read().replace("\n", " ").replace("  ", "\n"), width=39)
 
+
+@app.get("/chapters/{chapter}")
+def chapter(chapter: str) -> Response:
+    """Return ..."""
     return Response(
-        content=textwrap.fill(text, width=32),
+        content=read_chapter(chapter),
         media_type="text/plain",
     )
 
@@ -48,15 +53,15 @@ def enchiridion_text() -> Response:
     now = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
     chapters = sorted(
-        glob.glob(str(pathlib.Path(__file__).parent / "chapters" / "*.txt"))
+        path.with_suffix("").name
+        for path in pathlib.Path(__file__).parent.glob("chapters/*.txt")
     )
 
-    print(now, hash(now) % len(chapters))
+    index = int(hashlib.sha256(now.encode()).hexdigest(), 16) % len(chapters)
 
-    chapter = chapters[hash(now) % len(chapters)]
+    chapter = chapters[index]
 
-    with open(chapter, "r") as f:
-        return Response(
-            content=f.read(),
-            media_type="text/plain",
-        )
+    return Response(
+        content=read_chapter(chapter),
+        media_type="text/plain",
+    )

@@ -66,3 +66,12 @@ def enchiridion_text() -> Response:
         content=content,
         media_type="text/plain",
     )
+
+
+@app.exception_handler(404)
+def not_found(_, __):
+    return Response(
+        status_code=404,
+        media_type="text/plain",
+        content="lost",
+    )

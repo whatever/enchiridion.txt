@@ -33,4 +33,11 @@ def read_chapter(chapter: str) -> str | None:
         return None
 
     with open(fpath, "r") as f:
-        return textwrap.fill(f.read().replace("\n", " ").replace("  ", "\n"), width=39)
+        return (
+            chapter
+            + "\n\n"
+            + textwrap.fill(
+                text=f.read().replace("\n", " ").replace("  ", "\n"),
+                width=39,
+            )
+        )
